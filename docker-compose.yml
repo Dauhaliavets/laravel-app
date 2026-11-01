@@ -1,0 +1,57 @@
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: laravel-app-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - laravel-app
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: laravel-app-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel-app
+      MYSQL_USER: user
+      MYSQL_PASSWORD: LaRaVeLaPp08012024
+    ports:
+      - "3307:3306" # снаружи 3307, чтобы не конфликтовать с локальным MySQL
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: laravel-app-redis
+    ports:
+      - "6380:6379" # тоже сдвигаем порт
+    networks:
+      - app-network
+
+  laravel-app:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: laravel-app
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+
+networks:
+  app-network:
+    driver: bridge
