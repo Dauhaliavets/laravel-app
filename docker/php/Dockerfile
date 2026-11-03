@@ -8,6 +8,8 @@ RUN apk add --no-cache \
     libzip-dev \
     oniguruma-dev \
     icu-dev \
+    build-base \
+    linux-headers \
     $PHPIZE_DEPS
 
 # Расширения PHP (аналоги установки пакетов, но на уровне C-расширений)
@@ -17,15 +19,16 @@ RUN docker-php-ext-install \
     zip \
     intl \
     opcache \
-    bcmath
+    bcmath \
+    pcntl
 
 # Composer (глобально, как npm)
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Устанавливаем зависимости для сборки, собираем Xdebug и очищаем кэш
+# Устанавливаем зависимости для сборки, собираем Xdebug и Redis, очищаем кэш
 RUN apk add --no-cache $PHPIZE_DEPS linux-headers \
-    && pecl install xdebug-3.4.0 \
-    && docker-php-ext-enable xdebug \
+    && pecl install xdebug-3.4.0 redis \
+    && docker-php-ext-enable xdebug redis \
     && apk del $PHPIZE_DEPS linux-headers
 
 WORKDIR /var/www/html
