@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\UserRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -26,12 +27,17 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        UserRegistered::dispatch(
+            userId: $user->id,
+            email: $user->email,
+            name: $user->name,
+        );
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
             'token' => $token,
-            'token_type' => 'Bearer',
         ], 201);
     }
 
