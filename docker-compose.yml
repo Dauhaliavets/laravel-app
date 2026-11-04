@@ -49,6 +49,22 @@ services:
     networks:
       - app-network
 
+  horizon:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: laravel-app-horizon
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    # Переопределяем команду для запуска Horizon
+    command: php artisan horizon
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - app-network
+
 volumes:
   mysql-data:
 
